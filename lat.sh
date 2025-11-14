@@ -377,7 +377,8 @@ async function main() {
   appendLineSyncAtomic(OUTPUT_FILE, footer);
   saveState({ startAddress: startAddr, currentAddress, step, visited: Array.from(visited), finishedAt: new Date().toISOString() });
   console.log('Scan Completed. Results written to', OUTPUT_FILE);
-  console.log('To continue with different address, replace "Start_Address" in .env file');
+  console.log();
+  console.log('To continue with different address, replace the address in "Start_Address" in .env file');
   console.log('To re-run: node lat.js');
 }
 
