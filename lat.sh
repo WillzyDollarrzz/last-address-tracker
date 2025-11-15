@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 set -euo pipefail
 echo
 curl -s "https://raw.githubusercontent.com/WillzyDollarrzz/willzy/main/inscription.txt" \
@@ -8,6 +8,7 @@ curl -s "https://raw.githubusercontent.com/WillzyDollarrzz/willzy/main/inscripti
     done
 
 sleep 2
+echo
 
 PROJECT_DIR="$(pwd)"
 NODE_SCRIPT="lat.js"
@@ -29,12 +30,13 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
+info ""
 
 
 read -r -p "Paste an rpc url (recommend helius free rpc / paid): " RPC_URL
 RPC_URL="${RPC_URL:-https://api.mainnet-beta.solana.com}"
 
-read -r -p "Paste the Solana Address you want to track: " START_ADDRESS
+read -r -p "Paste the Solana Address you want to track): " START_ADDRESS
 if [ -z "$START_ADDRESS" ]; then
   err "Start address is required. Re-run ./lat.sh and paste a valid solana address."
   exit 1
@@ -79,6 +81,7 @@ MAX_RETRIES=5
 EOF
 
 info ".env written."
+
 info "Writing package.json"
 
 cat > "$PKG_JSON" <<'JSON'
@@ -102,11 +105,14 @@ cat > "$PKG_JSON" <<'JSON'
 JSON
 
 info "package.json modified."
+
+
 info "Installing dependencies (this may take a moment)..."
 npm install
 
 info "Dependencies installed."
-info "Writing LAT script (${NODE_SCRIPT})..."
+
+info "Writing Node script (${NODE_SCRIPT})..."
 
 cat > "$NODE_SCRIPT" <<'JS'
 #!/usr/bin/env node
@@ -155,7 +161,7 @@ async function withRetries(fn, opts = {}) {
   let wait = 300;
   while (true) {
     try {
-      // ensure we don't flood RPCs
+     
       await rateLimitRpc();
       return await fn();
     } catch (err) {
@@ -173,7 +179,7 @@ async function withRetries(fn, opts = {}) {
 function appendLineSyncAtomic(filePath, line) {
   const fd = fs.openSync(filePath, 'a');
   try {
-    // write the line and one extra newline for spacing
+
     fs.writeSync(fd, line + '\n\n');
     fs.fsyncSync(fd);
   } finally {
@@ -232,7 +238,11 @@ async function findLastOutgoingRecipient(address, signatureLimit = SIGNATURES_LI
 
     for (const si of sigs) {
       scanned++;
-      const parsedTx = await withRetries(() => connection.getParsedTransaction(si.signature, 'confirmed'));
+
+      const parsedTx = await withRetries(() =>
+        connection.getParsedTransaction(si.signature, { commitment: 'confirmed', maxSupportedTransactionVersion: 0 })
+      );
+
       if (!parsedTx || !parsedTx.transaction) continue;
       const instructions = parsedTx.transaction.message.instructions;
 
@@ -378,8 +388,8 @@ async function main() {
   saveState({ startAddress: startAddr, currentAddress, step, visited: Array.from(visited), finishedAt: new Date().toISOString() });
   console.log('Scan Completed. Results written to', OUTPUT_FILE);
   console.log();
-  console.log('To continue with different address, replace the address in "Start_Address" in .env file');
-  console.log('To re-run: node lat.js');
+  console.log ('To continue with different address, replace the address in "Start_Address" in .env file');
+  console.log ('To re-run: node lat.js');
 }
 
 main().catch((err) => {
@@ -387,6 +397,7 @@ main().catch((err) => {
   process.exit(1);
 });
 JS
+
 
 chmod +x "$NODE_SCRIPT" >/dev/null 2>&1 || true
 
